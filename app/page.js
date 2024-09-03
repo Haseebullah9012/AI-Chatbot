@@ -17,7 +17,7 @@ export default function Home() {
   ]);
 
   const [prompt, setPrompt] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [isResponseLoading, setIsResponseLoading] = useState(false);
   const scrollToEndRef = useRef(null);
 
   async function handleSendMessage(e) {
@@ -25,25 +25,35 @@ export default function Home() {
     
     if(prompt.trim() === '')
       return; //Empty Prompt
-    if(isLoading)
+    if(isResponseLoading)
       return; //First wait for the Response
 
-    const userPromptAddedHistory = [...chatHistory, {role:'user', parts:[{text:prompt}]} ]; //Add User-Message to Chat-History
-    const modelResponsePlaceholder = {role:'model', parts:[{text:''}]}; //AI-Message Placeholder
-    setChatHistory([...userPromptAddedHistory, modelResponsePlaceholder]);
+    const historyWithUserPrompt = [...chatHistory, {role:'user', parts:[{text:prompt}]} ]; //Add User-Prompt to Chat-History
+    const modelMessage = {role:'model', parts:[{ text:'' }]}; //AI-Message Placeholder
+    setChatHistory([...historyWithUserPrompt, modelMessage]); 
     setPrompt('');
-    setIsLoading(true);
     
+    setIsResponseLoading(true);
     const response = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({prompt:prompt, chatHistory:chatHistory}),
     })
-    
-    const body = await response.json();
-    const updatedChatHistory = [...userPromptAddedHistory, {...modelResponsePlaceholder, parts:[{text:body.response}] }];
-    setChatHistory(updatedChatHistory);
-    setIsLoading(false);    
+
+    const reader = response.body.getReader(); //Read the Response Stream
+    const decoder = new TextDecoder();
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done)
+        break;
+      
+      const chunk = decoder.decode(value, { stream: true });
+      modelMessage.parts[0].text += chunk;
+      setChatHistory([...historyWithUserPrompt, modelMessage]);    
+    }
+
+    setIsResponseLoading(false);
   }
 
   
