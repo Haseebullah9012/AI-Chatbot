@@ -33,6 +33,7 @@ body {
 }
 
 
+/* Custom Scrollbar on ChatMessage Area and Input Textarea */
 .custom-scrollbar::-webkit-scrollbar {
   width: 8px;
 }
@@ -45,3 +46,64 @@ body {
   border-radius: 10px;
   margin: 2px 0;
 }
+
+
+/* Markdown Content on React Markdown Component */
+.markdown-content {
+  line-height: 1.4;
+}
+
+.markdown-content p {
+  margin-top: 0.8rem;
+  margin-bottom: 0.5rem;
+}
+.markdown-content p:first-child {
+  margin-top: 0;
+}
+.markdown-content p:first-child:last-child {
+  margin-bottom: 0; /* If only single Paragraph, then No Margin Bottom */
+}
+
+.markdown-content ul,
+.markdown-content ol {
+  margin-bottom: 1rem;
+  padding-left: 2rem;
+}
+.markdown-content li {
+  margin-bottom: 0.5rem;
+  list-style: square;
+}
+.markdown-content li ul li {
+  list-style-type: circle; /*Nested List*/
+}
+.markdown-content a {
+  color: #3182ce;
+  text-decoration: underline;
+}
+
+.markdown-content h1,
+.markdown-content h2,
+.markdown-content h3 {
+  margin-top: 1rem;
+  margin-bottom: 0.6rem;
+  font-weight: bold;
+}
+.markdown-content h1 { font-size: 1.8rem; }
+.markdown-content h2 { font-size: 1.6rem; }
+.markdown-content h3 { font-size: 1.4rem; }
+
+.markdown-content blockquote {
+  margin: 1rem 0;
+  padding-left: 1rem;
+  border-left: 3px solid #4a5568;
+  margin-left: 1rem;
+}
+.markdown-content pre {
+  border-left: 3px solid #4a5568;
+  padding: 0.5rem;
+  margin-left: 1rem;
+}
+.markdown-content code {
+  font-size: 0.9em;
+}
+
