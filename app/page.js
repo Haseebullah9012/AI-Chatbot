@@ -98,6 +98,11 @@ export default function Home() {
 
   useEffect(() => {
     scrollToEndRef.current.scrollTop = scrollToEndRef.current?.scrollHeight;
+
+    const links = document.querySelectorAll('a'); 
+    links.forEach(link => {
+      link.setAttribute('target', '_blank');
+    });
   }, 
   [chatHistory]);
   
