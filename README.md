@@ -1,19 +1,38 @@
-This is a [Next.js](https://nextjs.org/) project
-
 ## Getting Started
 
-First, run the development server:
+This is a General Purpose Chat Bot. 
 
-```bash
-npm run dev
+It uses Google's Gemini General Model.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Some Features
+ - Specific System Instructions are given, and the model is configured for our use case. 
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+ - It streams the Response Messages, and they get rendered as soon as they become available. THis enhances User Experience. 
 
-## Learn More
+ - The Words are typed with Typewriter Effect Animcation. Looks Cool. 
 
-To learn more about Next.js, take a look at the following resources:
+ - The Markdown Feature is also applied to the Respones. Which makes the Responses much more better and Easier to Read. 
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+ - The Model remembers the whole Context, from the beginning of Conversation. 
+
+ - The Input Textarea is Multi-line. Press Shift-Enter to get to the new Line. And Press Enter to Send Message. 
+
+ - Auto Scrolling with the COntent. 
+
+ - Dark Clean UI with appropriate Margins and Paddings. Still isn't Perfect for Mobile Screens. 
+
+
+ ## Things we could do for Further Improvement. 
+  - Make Model work with and Analyze Image, Audio, Video Files. 
+
+  - Add Multi-Language Support. 
+
+  - Add User-Authentication, and Store the whole Session. And even Create Multiple Sessions. 
+
+  - User Feedback Mechanism for Model's Improvement
+
+  - Implement RAG to have access to large Corpus of Data. It will increase Model's Accuracy. 
+
+  - Implement multiple Models, and ROuter Model to pick which model is best suited for the given Prompt. 
+
+  

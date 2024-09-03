@@ -3,7 +3,6 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const systemInstruction = process.env.SYSTEM_INSTRUCTION;
-console.log(systemInstruction);
 
 export async function POST(req) {
   const data = await req.json(); //User Prompt
@@ -31,5 +30,5 @@ export async function POST(req) {
   return new NextResponse(stream, {
     headers: { 'Content-Type': 'text/event-stream' }
   });
-
+  
 }
