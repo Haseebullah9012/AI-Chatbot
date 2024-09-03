@@ -5,6 +5,10 @@ import ReactMarkdown from 'react-markdown';
 
 export default function Home() {
   
+  const [prompt, setPrompt] = useState('');
+  const [isResponseLoading, setIsResponseLoading] = useState(false);
+  const scrollToEndRef = useRef(null);
+
   const [chatHistory, setChatHistory] = useState([
     {
       "role": "user",
@@ -15,10 +19,6 @@ export default function Home() {
       "parts": [{ "text": "Great to meet you. What Would you like to know?" }]
     },
   ]);
-
-  const [prompt, setPrompt] = useState('');
-  const [isResponseLoading, setIsResponseLoading] = useState(false);
-  const scrollToEndRef = useRef(null);
 
   async function handleSendMessage(e) {
     e.preventDefault();
@@ -33,29 +33,50 @@ export default function Home() {
     setChatHistory([...historyWithUserPrompt, modelMessage]); 
     setPrompt('');
     
-    setIsResponseLoading(true);
-    const response = await fetch('/api/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({prompt:prompt, chatHistory:chatHistory}),
-    })
+    try {
+      setIsResponseLoading(true);
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({prompt:prompt, chatHistory:chatHistory}),
+      })
+      
+      if(!response.ok)
+        throw new Error('The Response was not OK!');
 
+      await readAndRenderStream(response);
+    }
+    catch (error) {
+      console.error('Fetch Response Error:', error);
+
+      modelMessage.parts[0].text = "I'm sorry, but I encountered an error. Please try again later."; //Update the current Message with Error
+      setChatHistory([...historyWithUserPrompt, modelMessage]);
+    }
+    
+    setIsResponseLoading(false);
+  }
+
+  async function readAndRenderStream(response) {
     const reader = response.body.getReader(); //Read the Response Stream
     const decoder = new TextDecoder();
 
-    const charBatchSize = 4; //No. of Characters to update at Once
+    const charBatchSize = 4; //Characters to update at Once
     let charQueue = [];
     let isRendering = false;
     
-    while (true) {
+    //They are defined here Again (Copy Pasted from above, rather than Passing them as Parameters)
+    const historyWithUserPrompt = [...chatHistory, {role:'user', parts:[{text:prompt}]} ];
+    const modelMessage = {role:'model', parts:[{ text:'' }]};
+    
+    while(true) {
       const { done, value } = await reader.read();
       if (done)
         break;
       
-      const chunk = decoder.decode(value, { stream: true });
+      const chunk = decoder.decode(value, { stream: true }); //Get the Chunk of Streamed Data
       const characters = chunk.split('');
-      
       charQueue.push(...characters);
+
       if(!isRendering)
         renderCharacters();
     }
@@ -67,20 +88,18 @@ export default function Home() {
       }
       
       isRendering = true;
-      const chars = charQueue.splice(0,charBatchSize).join('');
-      modelMessage.parts[0].text += chars;
+      modelMessage.parts[0].text += charQueue.splice(0,charBatchSize).join('');
       setChatHistory([...historyWithUserPrompt, modelMessage]);
       
-      scrollToEndRef.current.scrollTop = scrollToEndRef.current?.scrollHeight;
+      scrollToEndRef.current.scrollTop = scrollToEndRef.current?.scrollHeight; //Scroll alongwith Content
       requestAnimationFrame(renderCharacters); //For Smoother Animation
     };
-
-    setIsResponseLoading(false);
   }
 
   useEffect(() => {
     scrollToEndRef.current.scrollTop = scrollToEndRef.current?.scrollHeight;
-  }, [chatHistory]);
+  }, 
+  [chatHistory]);
   
   return (
     <main className="flex flex-col min-h-screen items-center px-2 py-4 sm:px-8 sm:py-8 bg-slate-900">
