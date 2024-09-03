@@ -43,22 +43,43 @@ export default function Home() {
     const reader = response.body.getReader(); //Read the Response Stream
     const decoder = new TextDecoder();
 
+    const charBatchSize = 4; //No. of Characters to update at Once
+    let charQueue = [];
+    let isRendering = false;
+    
     while (true) {
       const { done, value } = await reader.read();
       if (done)
         break;
       
       const chunk = decoder.decode(value, { stream: true });
-      modelMessage.parts[0].text += chunk;
-      setChatHistory([...historyWithUserPrompt, modelMessage]);    
+      const characters = chunk.split('');
+      
+      charQueue.push(...characters);
+      if(!isRendering)
+        renderCharacters();
     }
+
+    function renderCharacters() {
+      if (charQueue.length === 0) {
+        isRendering = false;
+        return;
+      }
+      
+      isRendering = true;
+      const chars = charQueue.splice(0,charBatchSize).join('');
+      modelMessage.parts[0].text += chars;
+      setChatHistory([...historyWithUserPrompt, modelMessage]);
+      
+      scrollToEndRef.current.scrollTop = scrollToEndRef.current?.scrollHeight;
+      requestAnimationFrame(renderCharacters); //For Smoother Animation
+    };
 
     setIsResponseLoading(false);
   }
 
-  
   useEffect(() => {
-    scrollToEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    scrollToEndRef.current.scrollTop = scrollToEndRef.current?.scrollHeight;
   }, [chatHistory]);
   
   return (
@@ -68,7 +89,7 @@ export default function Home() {
       <div className="flex flex-col flex-grow max-w-5xl w-full font-mono text-sm bg-slate-800 rounded-lg">
         
         {/* Here, h-value doesn't Update due to Overrding flex-grow. But, it is neccesary to Fix the Scrolling Problem */}
-        <div className="flex-grow h-0 overflow-y-auto custom-scrollbar">
+        <div ref={scrollToEndRef} className="flex-grow h-0 overflow-y-auto custom-scrollbar">
           {chatHistory.map((message, index) => (
             <div key={index} className={`m-4 ${message.role==='user' ? 'text-right':'text-left'}`}>
               
@@ -82,7 +103,6 @@ export default function Home() {
               ))}
             </div>
           ))}
-          <div ref={scrollToEndRef} />
         </div>
         
         <form className="flex p-2 border-t-2 border-slate-600 py-2 items-end" onSubmit={handleSendMessage}>
